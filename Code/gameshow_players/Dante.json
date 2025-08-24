@@ -1,0 +1,8 @@
+{
+    "name": "Dante",
+    "game": {
+        "three_doors": 0,
+        "five_doors": 0, 
+        "ten_doors":0
+    }
+}

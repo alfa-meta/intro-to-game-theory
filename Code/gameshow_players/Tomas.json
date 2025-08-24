@@ -1,0 +1,8 @@
+{
+    "name": "Tomas",
+    "game": {
+        "three_doors": 0.67,
+        "five_doors": 1, 
+        "ten_doors":1
+    }
+}
