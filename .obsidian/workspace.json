@@ -160,6 +160,7 @@
   },
   "left-ribbon": {
     "hiddenItems": {
+      "bases:Create new base": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -170,6 +171,7 @@
   },
   "active": "c438ebe71a3bb692",
   "lastOpenFiles": [
+    "Code/main.cs",
     "Pasted image 20250819004706.png",
     "Pasted image 20250819004653.png",
     "Pasted image 20250819001500.png",
