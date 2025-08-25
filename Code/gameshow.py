@@ -1,7 +1,10 @@
 import random
 import os
 import json
+import secrets
 from typing import Dict, List, Tuple
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import time
 
 ### Core game helpers ###
 
@@ -16,13 +19,9 @@ def return_2_doors(game_list: List[bool], players_original_decision: int) -> Tup
     n = len(game_list)
     correct_door = next(i for i, v in enumerate(game_list) if v)
 
-    # Ensure the two doors shown are: (correct_door, a non-prize door),
-    # and include the player's original pick among them.
     if players_original_decision != correct_door:
-        # Player picked a wrong door. Show their pick as the false door.
         false_door = players_original_decision
     else:
-        # Player picked the correct door. Show a random *other* wrong door.
         wrong_doors = [i for i in range(n) if i != correct_door]
         false_door = random.choice(wrong_doors)
 
@@ -34,19 +33,16 @@ def prob_to_bool(prob: float) -> bool:
     return random.random() < prob
 
 def change_or_stay(answer_tuple: Tuple[int, int], players_original_decision: int, probability: float) -> int:
-    # answer_tuple = (correct_door, false_door). Ensure player's pick is one of them.
     if players_original_decision not in answer_tuple:
-        # If not shown, replace false door with player's pick so tuple always contains it.
         answer_tuple = (answer_tuple[0], players_original_decision)
-
     idx = answer_tuple.index(players_original_decision)
-    if prob_to_bool(probability):       # change
+    if prob_to_bool(probability):
         return answer_tuple[1 - idx]
-    else:                               # stay
+    else:
         return answer_tuple[idx]
 
 def did_the_player_win(final_answer: int, answer_tuple: Tuple[int, int]) -> bool:
-    return final_answer == answer_tuple[0]  # index 0 is the correct door
+    return final_answer == answer_tuple[0]
 
 ### I/O + validation ###
 
@@ -127,17 +123,36 @@ def print_summary(rankings: List[Dict]) -> None:
         for g, stats in r["per_game"].items():
             print(f"   - {g}: {stats['wins']}W/{stats['losses']}L  ({stats['winrate']*100:.2f}%)")
 
+### Parallel helpers (new) ###
+
+def _init_worker():
+    # Give each process its own RNG seed to avoid correlated streams
+    random.seed(secrets.randbits(64))
+
+def _simulate_wrapper(args):
+    name, game, runs = args
+    return simulate_player(name, game, runs)
+
+### Entry ###
 def main():
     player_dict = import_all_players("gameshow_players")
     if not player_dict:
         print("No players found.")
         return
 
-    all_results = []
-    for name, game in player_dict.items():
-        res = simulate_player(name, game, runs_per_game=100)
-        save_player_results(res)
-        all_results.append(res)
+    runs_per_game = 100_000_000  # same as before
+    tasks = [(name, game, runs_per_game) for name, game in player_dict.items()]
+
+    all_results: List[Dict] = []
+
+    # One process per player (bounded by CPU cores)
+    max_workers = min(len(tasks), os.cpu_count() or 1)
+    with ProcessPoolExecutor(max_workers=max_workers, initializer=_init_worker) as ex:
+        future_map = {ex.submit(_simulate_wrapper, t): t[0] for t in tasks}
+        for fut in as_completed(future_map):
+            res = fut.result()          # may raise if the worker crashed
+            save_player_results(res)    # save as each player finishes
+            all_results.append(res)
 
     # Rank by overall winrate, tie-break by total wins
     rankings = sorted(
@@ -147,6 +162,8 @@ def main():
     )
     print_summary(rankings)
 
-### Entry ###
 if __name__ == "__main__":
+    start: float = time.time()
     main()
+    end: float = time.time()
+    print("Execution time:", end - start, "seconds")
