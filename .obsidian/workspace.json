@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Game Theory 101/Basics.md",
+                "file": "Introduction to Game Theory/Chapter 2 - Nash Equilibrium Theory.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Basics"
+              "title": "Chapter 2 - Nash Equilibrium Theory"
             }
           }
         ]
@@ -171,7 +171,10 @@
   },
   "active": "c438ebe71a3bb692",
   "lastOpenFiles": [
+    "main.cs",
+    "Introduction to Game Theory/Chapter 1.md",
     "Introduction to Game Theory/Chapter 2 - Nash Equilibrium Theory.md",
+    "Pasted image 20250819001500.png",
     "Game Theory 101/Basics.md",
     "Game Theory 101",
     "Code/gameshow_results/Michał.json",
@@ -185,8 +188,6 @@
     "Code/main.cs",
     "Pasted image 20250819004706.png",
     "Pasted image 20250819004653.png",
-    "Pasted image 20250819001500.png",
-    "Introduction to Game Theory/Chapter 1.md",
     "Welcome.md"
   ]
 }
